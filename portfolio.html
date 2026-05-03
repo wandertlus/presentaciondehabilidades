@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Systems Builder — Backend & Automation Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a08;
+    --surface: #111110;
+    --surface2: #1a1a17;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --accent: #c8f55a;
+    --accent2: #8bffd4;
+    --text: #f0ede4;
+    --muted: #7a7870;
+    --muted2: #a8a49a;
+    --danger: #ff6b6b;
+    --mono: 'DM Mono', monospace;
+    --display: 'Syne', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* ─── LAYOUT ─── */
+  .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1.25rem 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,8,0.85);
+    backdrop-filter: blur(12px);
+  }
+  .nav-logo { font-family: var(--display); font-weight: 700; font-size: 15px; letter-spacing: -0.02em; color: var(--accent); }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 12px; letter-spacing: 0.05em; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--accent); color: #0a0a08;
+    border: none; padding: 8px 18px; font-family: var(--mono); font-size: 12px; font-weight: 500;
+    cursor: pointer; letter-spacing: 0.03em;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 8rem 2rem 4rem;
+    position: relative;
+  }
+  .hero-tag {
+    font-size: 11px; letter-spacing: 0.15em; color: var(--accent);
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hero-tag::before { content: ''; width: 30px; height: 1px; background: var(--accent); display: inline-block; }
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 2rem;
+  }
+  .hero h1 .line2 { color: var(--muted); }
+  .hero h1 .accent { color: var(--accent); }
+  .hero-desc {
+    max-width: 520px;
+    color: var(--muted2);
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+  }
+  .hero-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--accent); color: #0a0a08;
+    border: none; padding: 12px 28px;
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    cursor: pointer; text-decoration: none; display: inline-block;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-ghost {
+    border: 1px solid var(--border2); color: var(--muted2);
+    padding: 11px 28px;
+    font-family: var(--mono); font-size: 13px;
+    cursor: pointer; text-decoration: none; display: inline-block;
+    background: transparent; transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+  .hero-grid {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    opacity: 0.04; pointer-events: none;
+    display: grid; grid-template-columns: repeat(8, 40px); gap: 8px;
+  }
+  .hero-grid-cell { width: 40px; height: 40px; border: 1px solid white; }
+
+  /* ─── STATS BAR ─── */
+  .stats-bar {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 2rem;
+  }
+  .stat { }
+  .stat-num { font-family: var(--display); font-size: 2rem; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; }
+  .stat-label { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; margin-top: 2px; }
+
+  /* ─── SECTIONS ─── */
+  section { padding: 5rem 2rem; }
+  .section-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 3rem;
+  }
+  .section-num { font-size: 11px; color: var(--accent); letter-spacing: 0.1em; }
+  .section-title { font-family: var(--display); font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* ─── SERVICES ─── */
+  .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1px; background: var(--border); }
+  .service-card {
+    background: var(--bg);
+    padding: 2rem;
+    transition: background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .service-card:hover { background: var(--surface); }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-icon { font-size: 1.5rem; margin-bottom: 1rem; }
+  .service-name { font-family: var(--display); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; }
+  .service-desc { color: var(--muted2); font-size: 13px; line-height: 1.7; margin-bottom: 1.25rem; }
+  .service-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 10px; letter-spacing: 0.07em;
+    border: 1px solid var(--border2); color: var(--muted);
+    padding: 3px 10px;
+  }
+  .tag.accent { border-color: rgba(200,245,90,0.3); color: var(--accent); background: rgba(200,245,90,0.05); }
+
+  /* ─── PROJECTS ─── */
+  .project-card {
+    border: 1px solid var(--border);
+    margin-bottom: 1px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .project-card:hover { border-color: var(--border2); }
+  .project-header {
+    padding: 1.75rem 2rem;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    cursor: pointer;
+  }
+  .project-meta { flex: 1; }
+  .project-label { font-size: 10px; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 6px; }
+  .project-name { font-family: var(--display); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .project-desc { color: var(--muted2); font-size: 13px; }
+  .project-arrow { color: var(--muted); font-size: 1.2rem; transition: transform 0.2s; margin-top: 4px; }
+  .project-card.open .project-arrow { transform: rotate(90deg); }
+  .project-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.4s ease;
+    border-top: 1px solid transparent;
+  }
+  .project-card.open .project-body { max-height: 800px; border-top-color: var(--border); }
+  .project-content { padding: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .project-section-title { font-size: 10px; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 1rem; }
+  .project-feature { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 13px; color: var(--muted2); }
+  .project-feature::before { content: '→'; color: var(--accent); flex-shrink: 0; margin-top: 1px; }
+  .tech-stack { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tech-pill { font-size: 11px; background: var(--surface2); color: var(--muted2); padding: 4px 12px; letter-spacing: 0.04em; }
+
+  /* ─── PROCESS ─── */
+  .process-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0; position: relative; }
+  .process-step {
+    padding: 2rem 1.5rem;
+    border-left: 1px solid var(--border);
+    position: relative;
+  }
+  .process-step:first-child { border-left: none; }
+  .step-num { font-family: var(--display); font-size: 3rem; font-weight: 800; color: var(--border2); line-height: 1; margin-bottom: 0.75rem; }
+  .step-title { font-family: var(--display); font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+  .step-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* ─── PRICING ─── */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--border); }
+  .pricing-card { background: var(--bg); padding: 2rem; position: relative; }
+  .pricing-card.featured { background: var(--surface2); }
+  .pricing-card.featured::after { content: 'POPULAR'; position: absolute; top: 1rem; right: 1rem; font-size: 9px; letter-spacing: 0.15em; color: var(--accent); border: 1px solid rgba(200,245,90,0.3); padding: 3px 8px; }
+  .price-label { font-size: 10px; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 0.75rem; }
+  .price-name { font-family: var(--display); font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .price-amount { font-family: var(--display); font-size: 2.5rem; font-weight: 800; color: var(--accent); letter-spacing: -0.03em; margin-bottom: 1rem; }
+  .price-amount span { font-size: 1rem; color: var(--muted); }
+  .price-features { list-style: none; margin-bottom: 1.5rem; }
+  .price-features li { font-size: 12px; color: var(--muted2); padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+  .price-features li::before { content: '✓'; color: var(--accent2); flex-shrink: 0; }
+
+  /* ─── CONTACT ─── */
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+  .contact-pitch { font-family: var(--display); font-size: 1.75rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
+  .contact-pitch .hl { color: var(--accent); }
+  .contact-item { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; color: var(--muted2); font-size: 13px; }
+  .contact-item a { color: var(--accent2); text-decoration: none; }
+  .contact-item a:hover { text-decoration: underline; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    color: var(--muted); font-size: 12px;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+  .hero h1 { animation: fadeUp 0.8s ease both; }
+  .hero-desc { animation: fadeUp 0.8s 0.15s ease both; }
+  .hero-actions { animation: fadeUp 0.8s 0.25s ease both; }
+  .hero-tag { animation: fadeUp 0.6s ease both; }
+
+  @media (max-width: 640px) {
+    .project-content { grid-template-columns: 1fr; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">SYS_BUILD/</span>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#projects">Projects</a>
+    <a href="#process">Process</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <a href="https://www.upwork.com/freelancers/~01dfeec83494e39e84?mp_source=share" class="nav-cta">Hire on Upwork →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+  <div class="hero-grid">
+    <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+    <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+    <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+    <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+    <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+    <div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div><div class="hero-grid-cell"></div>
+  </div>
+  <div class="hero-tag">BACKEND ENGINEER · AUTOMATION ARCHITECT</div>
+  <h1>
+    I build systems<br>
+    <span class="line2">that run</span>
+    <span class="accent"> businesses.</span>
+  </h1>
+  <p class="hero-desc">
+    From zero to production-ready — I design and ship backend infrastructure, 
+    automation pipelines, and operational OS platforms that replace manual work 
+    with intelligent, connected systems.
+  </p>
+  <div class="hero-actions">
+    <a href="#projects" class="btn-primary">See my work</a>
+    <a href="#pricing" class="btn-ghost">View services</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar container">
+  <div class="stat">
+    <div class="stat-num">2</div>
+    <div class="stat-label">PRODUCTION SYSTEMS</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">3</div>
+    <div class="stat-label">CORE TECH AREAS</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">100%</div>
+    <div class="stat-label">REMOTE READY</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">48h</div>
+    <div class="stat-label">AVG FIRST DELIVERY</div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">What I build</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">⬡</div>
+        <div class="service-name">Operational OS</div>
+        <div class="service-desc">Custom backend platforms that centralize inventory, sales, staff, and reporting for physical businesses. Built to replace spreadsheets permanently.</div>
+        <div class="service-tags">
+          <span class="tag accent">Python</span><span class="tag">FastAPI</span><span class="tag">SQLite/Postgres</span><span class="tag">REST API</span>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">⟲</div>
+        <div class="service-name">Workflow Automation</div>
+        <div class="service-desc">End-to-end automation pipelines connecting your tools — CRM, inventory, messaging, payments — so your team focuses on growth, not repetition.</div>
+        <div class="service-tags">
+          <span class="tag accent">n8n</span><span class="tag">Webhooks</span><span class="tag">Telegram Bot</span><span class="tag">Airtable</span>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">⊕</div>
+        <div class="service-name">Lead Generation Systems</div>
+        <div class="service-desc">Automated lead capture, scoring, and nurturing pipelines. From form submission to qualified prospect — zero manual intervention.</div>
+        <div class="service-tags">
+          <span class="tag accent">n8n</span><span class="tag">CRM Integration</span><span class="tag">AI Classification</span>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">◈</div>
+        <div class="service-name">API & Integration Architecture</div>
+        <div class="service-desc">Clean, documented REST APIs and third-party integrations. I connect systems that weren't meant to talk to each other — and make it look easy.</div>
+        <div class="service-tags">
+          <span class="tag accent">FastAPI</span><span class="tag">REST</span><span class="tag">Docker</span><span class="tag">Pydantic</span>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">◎</div>
+        <div class="service-name">AI-Powered Dashboards</div>
+        <div class="service-desc">Executive dashboards with AI analysis layers. Turn raw operational data into strategic decisions with embedded Gemini/Claude intelligence.</div>
+        <div class="service-tags">
+          <span class="tag accent">Gemini API</span><span class="tag">Claude API</span><span class="tag">Streamlit</span><span class="tag">Data viz</span>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">⬢</div>
+        <div class="service-name">Smart Inventory & POS</div>
+        <div class="service-desc">Recipe-aware inventory management, predictive restocking, event-based demand planning, and real-time low-stock alerts to Telegram.</div>
+        <div class="service-tags">
+          <span class="tag accent">POS Logic</span><span class="tag">SQLite</span><span class="tag">n8n Alerts</span><span class="tag">Forecasting</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects" style="background: var(--surface);">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Case studies</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="project-card" id="proj1">
+      <div class="project-header" onclick="toggleProject('proj1')">
+        <div class="project-meta">
+          <div class="project-label">CASE STUDY 01 · CAFÉ / FOOD & BEVERAGE</div>
+          <div class="project-name">Nexus OS</div>
+          <div class="project-desc">Full operational backend for a café — inventory, POS, event planning, smart purchasing, and AI-powered executive analysis.</div>
+        </div>
+        <div class="project-arrow">▶</div>
+      </div>
+      <div class="project-body">
+        <div class="project-content">
+          <div>
+            <div class="project-section-title">WHAT IT DOES</div>
+            <div class="project-feature">Recipe-aware POS: selling a product auto-deducts all linked ingredients</div>
+            <div class="project-feature">Predictive purchase engine: separates base stock vs event-locked inventory</div>
+            <div class="project-feature">Real-time Telegram alerts when stock hits critical thresholds</div>
+            <div class="project-feature">Event module: assign menu items to events, auto-calculate supply needs</div>
+            <div class="project-feature">AI executive analysis via Gemini — strategic summaries from raw data</div>
+            <div class="project-feature">REST API gateway for n8n and external integrations</div>
+          </div>
+          <div>
+            <div class="project-section-title">TECH STACK</div>
+            <div class="tech-stack">
+              <span class="tech-pill">Python 3.11</span>
+              <span class="tech-pill">FastAPI</span>
+              <span class="tech-pill">SQLite</span>
+              <span class="tech-pill">n8n</span>
+              <span class="tech-pill">Gemini API</span>
+              <span class="tech-pill">Streamlit</span>
+              <span class="tech-pill">Pydantic</span>
+              <span class="tech-pill">Uvicorn</span>
+              <span class="tech-pill">Docker</span>
+            </div>
+            <div class="project-section-title" style="margin-top:1.5rem">IMPACT</div>
+            <div class="project-feature">Eliminated 100% manual stock tracking</div>
+            <div class="project-feature">Event catering never cannibalizes daily operations</div>
+            <div class="project-feature">Purchase orders generated in seconds, not hours</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card" id="proj2">
+      <div class="project-header" onclick="toggleProject('proj2')">
+        <div class="project-meta">
+          <div class="project-label">CASE STUDY 02 · SALES & MARKETING</div>
+          <div class="project-name">Lead Automation Pipeline</div>
+          <div class="project-desc">Automated lead capture, classification, and nurturing system — from first touch to qualified prospect without human intervention.</div>
+        </div>
+        <div class="project-arrow">▶</div>
+      </div>
+      <div class="project-body">
+        <div class="project-content">
+          <div>
+            <div class="project-section-title">WHAT IT DOES</div>
+            <div class="project-feature">Captures leads from multiple entry points via webhooks</div>
+            <div class="project-feature">Auto-classifies and scores leads based on behavior signals</div>
+            <div class="project-feature">Routes qualified leads to CRM with enriched data</div>
+            <div class="project-feature">Follow-up sequences triggered automatically by lead stage</div>
+            <div class="project-feature">Real-time notifications to sales team via Telegram</div>
+          </div>
+          <div>
+            <div class="project-section-title">TECH STACK</div>
+            <div class="tech-stack">
+              <span class="tech-pill">n8n</span>
+              <span class="tech-pill">Webhooks</span>
+              <span class="tech-pill">Airtable</span>
+              <span class="tech-pill">Telegram API</span>
+              <span class="tech-pill">AI Classification</span>
+            </div>
+            <div class="project-section-title" style="margin-top:1.5rem">IMPACT</div>
+            <div class="project-feature">Zero manual lead triage — fully automated</div>
+            <div class="project-feature">Response time reduced from hours to seconds</div>
+            <div class="project-feature">Sales team only touches qualified, enriched leads</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">How I work</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="step-num">01</div>
+        <div class="step-title">Diagnose</div>
+        <div class="step-desc">30-min discovery call. I map your current workflow and identify what's costing you time and money.</div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">02</div>
+        <div class="step-title">Architect</div>
+        <div class="step-desc">I design the system before writing code. You approve the blueprint — no surprises at delivery.</div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">03</div>
+        <div class="step-title">Build</div>
+        <div class="step-desc">Rapid iterative development with daily check-ins. You see progress every 24-48 hours.</div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">04</div>
+        <div class="step-title">Deploy</div>
+        <div class="step-desc">Documented, tested, and live. Full handover with documentation and 2-week support window.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background: var(--surface);">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Engagement options</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="price-label">STARTER</div>
+        <div class="price-name">Automation Sprint</div>
+        <div class="price-amount">$300 <span>/ project</span></div>
+        <ul class="price-features">
+          <li>Single automation workflow</li>
+          <li>n8n or Python script</li>
+          <li>Up to 3 integrations</li>
+          <li>Delivery in 3-5 days</li>
+          <li>1-week support</li>
+        </ul>
+        <a href="#contact" class="btn-ghost" style="display:block; text-align:center; font-size:12px;">Start here</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="price-label">CORE</div>
+        <div class="price-name">Operational System</div>
+        <div class="price-amount">$800 <span>/ project</span></div>
+        <ul class="price-features">
+          <li>Full backend system (like Nexus OS)</li>
+          <li>Database + API + Dashboard</li>
+          <li>Automation pipelines included</li>
+          <li>Delivery in 2-3 weeks</li>
+          <li>2-week support + docs</li>
+        </ul>
+        <a href="#contact" class="btn-primary" style="display:block; text-align:center; font-size:12px;">Let's build it</a>
+      </div>
+      <div class="pricing-card">
+        <div class="price-label">RETAINER</div>
+        <div class="price-name">Monthly Partnership</div>
+        <div class="price-amount">$600 <span>/ month</span></div>
+        <ul class="price-features">
+          <li>Ongoing dev + maintenance</li>
+          <li>20h/month dedicated</li>
+          <li>Priority response (&lt;4h)</li>
+          <li>New features each sprint</li>
+          <li>Direct Slack/Telegram access</li>
+        </ul>
+        <a href="#contact" class="btn-ghost" style="display:block; text-align:center; font-size:12px;">Discuss scope</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Let's talk</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="contact-grid">
+      <div>
+        <div class="contact-pitch">Have a system<br>that needs <span class="hl">building?</span></div>
+        <p style="color: var(--muted2); font-size:13px; line-height:1.8; margin-bottom:1.5rem;">
+          I take on 2-3 projects per month to ensure quality. 
+          If you have a business process eating time and money, 
+          I can probably automate 80% of it in under 2 weeks.
+        </p>
+        <div class="contact-item">→ <a href="https://www.upwork.com/freelancers/~01dfeec83494e39e84?mp_source=share">Hire me on Upwork</a></div>
+        <div class="contact-item">→ <a href="https://www.fiverr.com">Find me on Fiverr</a></div>
+      </div>
+      <div>
+        <div style="background: var(--surface2); padding: 2rem; border: 1px solid var(--border);">
+          <div class="project-section-title" style="margin-bottom:1rem">QUICK FIT CHECK</div>
+          <div class="project-feature">You run a physical or digital business</div>
+          <div class="project-feature">You have manual processes eating 5+ hrs/week</div>
+          <div class="project-feature">You need systems, not just scripts</div>
+          <div class="project-feature">You want a builder who understands operations</div>
+          <div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+            <div style="font-size:11px; color:var(--muted); letter-spacing:0.08em; margin-bottom:8px;">AVAILABILITY</div>
+            <div style="color:var(--accent); font-family:var(--display); font-size:1.1rem; font-weight:600;">Open for projects ✓</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="container">
+  <span>SYS_BUILD/ — Backend & Automation</span>
+  <span style="color:var(--muted)">Built with precision. Deployed with purpose.</span>
+</footer>
+
+<script>
+function toggleProject(id) {
+  const card = document.getElementById(id);
+  card.classList.toggle('open');
+}
+</script>
+</body>
+</html>
